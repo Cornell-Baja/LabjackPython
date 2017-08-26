@@ -1,0 +1,16 @@
+Version History
+---------------
+
+2017-01-06 (LJM 1.1404)
+ - Added T4 support.
+ - Renamed:
+     stream/callback_stream.c to stream/stream_callback.c
+     stream/o_stream_only.c to stream/stream_out_only.c
+     stream/o_stream_run.c to stream/stream_basic_with_stream_out.c
+     stream/o_stream_update.c to stream/stream_out_update.c
+     stream/stream_all_or_none.c to stream/stream_external_clock.c
+     stream/stream_example.c to stream/stream_basic.c
+ - Added:
+     dio_ef/dio_ef_config_1_pwm_and_1_counter.c
+     spi/spi.c
+ - Many refactors

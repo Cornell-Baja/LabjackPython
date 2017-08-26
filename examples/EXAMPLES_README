@@ -1,0 +1,60 @@
+LJM Examples
+
+Directory Structure
+
+examples/
+    Contains examples showing the LJM Easy functions for performing
+    device operations.
+
+    ain/
+        Contains examples showing how to perform analog input readings and
+        configurations.
+
+    asynch/
+        Contains a UART loopback test.
+
+    config/
+        Contains examples showing how to read and write device configurations,
+        including device name and power configurations.
+
+    dio/
+        Contains examples showing how to read and write digital IOs.
+
+    dio_ef/
+        Contains a demonstration of PWM output and counter input.
+
+    ethernet/
+        Contains examples showing how to read and write Ethernet configurations.
+
+    i2c/
+        Contains a demonstration of I2C communication.
+
+    list_all/
+        Contains examples of displaying what LabJack devices are available using
+        LJM_ListAll.
+
+    spi/
+        Contains a demonstration of SPI communication.
+
+    stream/
+        Contains stream examples, including burst stream, externally-clocked
+        stream, triggered stream, and stream out.
+
+    testing/
+        Contains a speed test and other tests.
+
+    utilities/
+        Contains utility programs, including a device info displayer, a
+        thermocouple example, a Lua script demonstration, and demonstrations of
+        functions such as LJM_WriteRaw/LJM_ReadRaw, LJM_NamesToAddresses,
+        LJM_ErrorToString, and the LJM library config functions.
+
+    visual_studio_2008
+        Contains a .sln and a .vcproj file for each example program.
+
+    watchdog
+        Contains examples showing how to read and write watchdog configurations.
+
+    wifi
+        Contains examples showing how to read and write WiFi configurations and
+        properties.
