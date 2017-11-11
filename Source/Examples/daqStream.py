@@ -7,6 +7,7 @@ from labjack import ljm
 import time
 import sys
 import numpy as np
+import csv
 from datetime import datetime
 
 MAX_REQUESTS = 50 # The number of eStreamRead calls that will be performed.
@@ -66,7 +67,7 @@ try:
                 ljm.constants.GND,
                 ljm.constants.GND,
                 0,
-                1]
+                .01]
 
     ljm.eWriteNames(handle, len(aNames), aNames, aValues)
 
@@ -79,6 +80,12 @@ try:
     totScans = 0
     totSkip = 0 # Total skipped samples
 
+
+    output_names=['torque', 'clock', 'rpm_1', 'rpm_2', 'dist_1','dist_2']
+
+    with open("test_dyno.csv", "wb") as f:
+        writer = csv.writer(f)
+        writer.writerow(output_names)
     i = 1
     while i <= MAX_REQUESTS:
         ret = ljm.eStreamRead(handle)
@@ -93,7 +100,7 @@ try:
 
         a=data_intermediate[:,2]
         b=data_intermediate[:,3]
-        clock=a+b*65536
+        clock=(a+b*65536)/(80000000/2)
 
         a=data_intermediate[:,4]
         b=data_intermediate[:,5]
@@ -108,12 +115,13 @@ try:
 
         dist_1=data_intermediate[:,8]
         dist_2=data_intermediate[:,9]
-        # output_data=np.array([(80000000/clock_divisor)/(data_intermediate[4]+((data_intermediate[5])*65536))])
-        # print output_data
+
+
 
         output_data=np.array([torque, clock, rpm_1, rpm_2, dist_1,dist_2]).transpose()
 
         print output_data
+
 
         scans = len(data)/numAddresses
         totScans += scans
@@ -132,7 +140,11 @@ try:
         print("  Scans Skipped = %0.0f, Scan Backlogs: Device = %i, LJM = " \
               "%i" % (curSkip/numAddresses, ret[1], ret[2]))
         i += 1
-        print("\n RPM %i:" %((80000000/clock_divisor)/(data[4]+((int)(data[5])<<16))))
+
+
+        f=file('test_dyno.csv','a')
+        np.savetxt(f,output_data,delimiter=',')
+        f.close()
 
     end = datetime.now()
 
