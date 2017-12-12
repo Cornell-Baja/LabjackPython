@@ -1,7 +1,7 @@
 """
 Demonstrates how to stream using the eStream functions.
 
-"""
+""" 
 
 from labjack import ljm
 import time
