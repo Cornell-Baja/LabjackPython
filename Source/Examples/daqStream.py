@@ -5,6 +5,7 @@ Demonstrates how to stream using the eStream functions.
 
 from labjack import ljm
 import time
+import datetime
 import sys
 import numpy as np
 import csv
@@ -82,10 +83,17 @@ try:
 
 
     output_names=['torque', 'clock', 'rpm_1', 'rpm_2', 'dist_1','dist_2']
+    a=datetime.date(2018, 3, 7)
+    
+    date_csv= "dyno" +str(a.year)+"_"+str(a.month)+"_"str(a.day)+".csv"
 
     with open("test_dyno.csv", "wb") as f:
         writer = csv.writer(f)
         writer.writerow(output_names)
+    with open(date_csv, "wb") as f:
+        writer = csv.writer(f)
+        writer.writerow(output_names)
+
     i = 1
     while i <= MAX_REQUESTS:
         ret = ljm.eStreamRead(handle)
@@ -120,7 +128,7 @@ try:
 
         output_data=np.array([torque, clock, rpm_1, rpm_2, dist_1,dist_2]).transpose()
 
-        print output_data
+        
 
 
         scans = len(data)/numAddresses
@@ -143,6 +151,10 @@ try:
 
 
         f=file('test_dyno.csv','a')
+        np.savetxt(f,output_data,delimiter=',')
+        f.close()
+
+        f=file("date_csv",'a')
         np.savetxt(f,output_data,delimiter=',')
         f.close()
 
