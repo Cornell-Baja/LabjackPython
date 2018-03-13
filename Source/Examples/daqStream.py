@@ -1,15 +1,28 @@
 """
 Demonstrates how to stream using the eStream functions.
 
-""" 
+"""
 
 from labjack import ljm
 import time
-import datetime
 import sys
-import numpy as np
-import csv
 from datetime import datetime
+import numpy as np
+import signal
+import sys
+import csv
+def signal_handler(signal, frame):
+    global handle
+    print("\nStop Stream")
+    ljm.eStreamStop(handle)
+
+    # Close handle
+    ljm.close(handle)
+    print('You pressed Ctrl+C!')
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+
 
 MAX_REQUESTS = 50 # The number of eStreamRead calls that will be performed.
 
@@ -30,13 +43,17 @@ scanRate = 50
 scansPerRead = int(scanRate/2)
 clock_divisor = 64
 
-
 try:
     # Configure the analog inputs' negative channel, range, settling time and
     # resolution.
     # Note when streaming, negative channels and ranges can be configured for
     # individual analog inputs, but the stream has only one settling time and
     # resolution.
+    # aNames = ["AIN_ALL_NEGATIVE_CH", "AIN_ALL_RANGE", "STREAM_SETTLING_US",
+    #           "STREAM_RESOLUTION_INDEX"]
+    # aValues = [ljm.constants.GND, 10.0, 0, 0] #single-ended, +/-10V, 0 (default),
+                                             
+
     aNames = ["AIN0_NEGATIVE_CH",
                 "AIN1_NEGATIVE_CH",
                 "DIO_EF_CLOCK0_ENABLE",
@@ -51,7 +68,7 @@ try:
                 "DIO_EF_CLOCK0_ENABLE",
                 "AIN2_NEGATIVE_CH",
                 "AIN3_NEGATIVE_CH",
-                "AIN0_RESOLUTION_INDEX",
+                # "AIN0_RESOLUTION_INDEX",
                 "AIN0_RANGE"]
     aValues = [1,
                 ljm.constants.GND,
@@ -67,7 +84,7 @@ try:
                 1,
                 ljm.constants.GND,
                 ljm.constants.GND,
-                0,
+                # 0,
                 .01]
 
     ljm.eWriteNames(handle, len(aNames), aNames, aValues)
@@ -81,25 +98,22 @@ try:
     totScans = 0
     totSkip = 0 # Total skipped samples
 
-
     output_names=['torque', 'clock', 'rpm_1', 'rpm_2', 'dist_1','dist_2']
-    a=datetime.date(2018, 3, 7)
+    cur_log="dyno"+"_"+str(start.month)+"_"+str(start.day)+"_"+str(start.year)+"_"+str(start.hour)+"_"+str(start.minute)+"_"+str(start.second)+".csv"
+
+    with open("test_dyno.csv", "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(output_names)
+
+    with open(cur_log, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(output_names)
     
-    date_csv= "dyno" +str(a.year)+"_"+str(a.month)+"_"str(a.day)+".csv"
-
-    with open("test_dyno.csv", "wb") as f:
-        writer = csv.writer(f)
-        writer.writerow(output_names)
-    with open(date_csv, "wb") as f:
-        writer = csv.writer(f)
-        writer.writerow(output_names)
-
-    i = 1
-    while i <= MAX_REQUESTS:
+    while True:
+        print ("logging")
         ret = ljm.eStreamRead(handle)
-
+        
         data = ret[0]
-
         data_intermediate=np.reshape(data, (scansPerRead,len(aScanListNames)))
 
         torque_high=data_intermediate[:,0]
@@ -128,45 +142,23 @@ try:
 
         output_data=np.array([torque, clock, rpm_1, rpm_2, dist_1,dist_2]).transpose()
 
+        print (output_data)
+
+
         
 
 
-        scans = len(data)/numAddresses
-        totScans += scans
-
-        # Count the skipped samples which are indicated by -9999 values. Missed
-        # samples occur after a device's stream buffer overflows and are
-        # reported after auto-recover mode ends.
-        curSkip = data.count(-9999.0)
-        totSkip += curSkip
-
-        print("\neStreamRead %i" % i)
-        ainStr = ""
-        for j in range(0, numAddresses):
-            ainStr += "%s = %0.5f " % (aScanListNames[j], data[j])
-        print("  1st scan out of %i: %s" % (scans, ainStr))
-        print("  Scans Skipped = %0.0f, Scan Backlogs: Device = %i, LJM = " \
-              "%i" % (curSkip/numAddresses, ret[1], ret[2]))
-        i += 1
-
-
-        f=file('test_dyno.csv','a')
+        f=open('test_dyno.csv','a')
         np.savetxt(f,output_data,delimiter=',')
         f.close()
 
-        f=file("date_csv",'a')
+        f=open(cur_log,'a')
         np.savetxt(f,output_data,delimiter=',')
         f.close()
 
     end = datetime.now()
 
-    print("\nTotal scans = %i" % (totScans))
-    tt = (end-start).seconds + float((end-start).microseconds)/1000000
-    print("Time taken = %f seconds" % (tt))
-    print("LJM Scan Rate = %f scans/second" % (scanRate))
-    print("Timed Scan Rate = %f scans/second" % (totScans/tt))
-    print("Timed Sample Rate = %f samples/second" % (totScans*numAddresses/tt))
-    print("Skipped scans = %0.0f" % (totSkip/numAddresses))
+    
 except ljm.LJMError:
     ljme = sys.exc_info()[1]
     print(ljme)
@@ -174,8 +166,4 @@ except Exception:
     e = sys.exc_info()[1]
     print(e)
 
-print("\nStop Stream")
-ljm.eStreamStop(handle)
 
-# Close handle
-ljm.close(handle)

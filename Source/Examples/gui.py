@@ -26,12 +26,8 @@ def start():
 
 
 def stop():
-    global after_id
-    if after_id:
-        top.after_cancel(after_id)
-        after_id = None
-        var.set("Stopped")
-        label.config(bg="red")
+    var.set("Stopped")
+    label.config(bg="red")
 
 
 top = tkinter.Tk()

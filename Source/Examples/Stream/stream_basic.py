@@ -7,6 +7,20 @@ from labjack import ljm
 import time
 import sys
 from datetime import datetime
+import signal
+import sys
+def signal_handler(signal, frame):
+    global handle
+    print("\nStop Stream")
+    ljm.eStreamStop(handle)
+
+    # Close handle
+    ljm.close(handle)
+    print('You pressed Ctrl+C!')
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+
 
 MAX_REQUESTS = 50 # The number of eStreamRead calls that will be performed.
 
@@ -48,7 +62,7 @@ try:
     totSkip = 0 # Total skipped samples
 
     i = 1
-    while i <= MAX_REQUESTS:
+    while True:
         ret = ljm.eStreamRead(handle)
         
         data = ret[0]
@@ -86,8 +100,4 @@ except Exception:
     e = sys.exc_info()[1]
     print(e)
 
-print("\nStop Stream")
-ljm.eStreamStop(handle)
 
-# Close handle
-ljm.close(handle)
