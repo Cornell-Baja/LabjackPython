@@ -116,47 +116,47 @@ try:
         ret = ljm.eStreamRead(handle)
         
         data = ret[0]
-        # data_intermediate=np.reshape(data, (scansPerRead,len(aScanListNames)))
+        data_intermediate=np.reshape(data, (scansPerRead,len(aScanListNames)))
 
-        # torque_high=data_intermediate[:,0]
-        # torque_low=data_intermediate[:,1]
-        # torque=torque_high-torque_low
+        torque_high=data_intermediate[:,0]
+        torque_low=data_intermediate[:,1]
+        torque=torque_high-torque_low
 
-        # a=data_intermediate[:,2]
-        # b=data_intermediate[:,3]
-        # clock=(a+b*65536)/(80000000/2)
+        a=data_intermediate[:,2]
+        b=data_intermediate[:,3]
+        clock=(a+b*65536)/(80000000/2)
 
-        # a=data_intermediate[:,4]
-        # b=data_intermediate[:,5]
-        # rpm_1=a+b*65536
-        # rpm_1=(80000000/clock_divisor)/rpm_1
-
-
-        # a=data_intermediate[:,6]
-        # b=data_intermediate[:,7]
-        # rpm_2=a+b*65536
-        # rpm_2=(80000000/clock_divisor)/rpm_2
-
-        # dist_1=data_intermediate[:,8]
-        # dist_2=data_intermediate[:,9]
+        a=data_intermediate[:,4]
+        b=data_intermediate[:,5]
+        rpm_1=a+b*65536
+        rpm_1=(80000000/clock_divisor)/rpm_1
 
 
+        a=data_intermediate[:,6]
+        b=data_intermediate[:,7]
+        rpm_2=a+b*65536
+        rpm_2=(80000000/clock_divisor)/rpm_2
 
-        # output_data=np.array([torque, clock, rpm_1, rpm_2, dist_1,dist_2]).transpose()
+        dist_1=data_intermediate[:,8]
+        dist_2=data_intermediate[:,9]
 
-        # print (output_data)
+
+
+        output_data=np.array([torque, clock, rpm_1, rpm_2, dist_1,dist_2]).transpose()
+
+        print (output_data)
 
 
         
 
 
-        # f=open('test_dyno.csv','a')
-        # np.savetxt(f,output_data,delimiter=',')
-        # f.close()
+        f=open('test_dyno.csv','a')
+        np.savetxt(f,output_data,delimiter=',')
+        f.close()
 
-        # f=open(cur_log,'a')
-        # np.savetxt(f,output_data,delimiter=',')
-        # f.close()
+        f=open(cur_log,'a')
+        np.savetxt(f,output_data,delimiter=',')
+        f.close()
 
     end = datetime.now()
 
