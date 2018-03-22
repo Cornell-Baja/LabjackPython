@@ -36,12 +36,13 @@ print("Opened a LabJack with Device type: %i, Connection type: %i,\n" \
     (info[0], info[1], info[2], ljm.numberToIP(info[3]), info[4], info[5]))
 
 # Stream Configuration
-aScanListNames = ["DIO0_EF_READ_A_F_AND_RESET", "DIO0_EF_READ_B_F"] #Scan list names to stream
+aScanListNames = ["CORE_TIMER","STREAM_DATA_CAPTURE_16", "DIO0_EF_READ_A_AND_RESET", "STREAM_DATA_CAPTURE_16", "DIO0_EF_READ_B", "STREAM_DATA_CAPTURE_16" ] #Scan list names to stream
 numAddresses = len(aScanListNames)
 aScanList = ljm.namesToAddresses(numAddresses, aScanListNames)[0]
 scanRate = 50
 scansPerRead = int(scanRate/2)
-clock_divisor = 8
+clock_divisor = 1
+
 
 try:
     # Configure the analog inputs' negative channel, range, settling time and
@@ -53,6 +54,7 @@ try:
                                              
 
     aNames = [
+                "DIO_EF_CLOCK0_ENABLE",
                 "DIO_EF_CLOCK0_DIVISOR",
                 "DIO_EF_CLOCK0_ROLL_VALUE",
                 "DIO_EF_CLOCK0_ENABLE",
@@ -62,7 +64,8 @@ try:
                 "DIO0_EF_ENABLE"
 
                 ]
-    aValues = [ clock_divisor,
+    aValues = [ 0,
+                clock_divisor,
                 0,
                 1,
                 0,
@@ -82,7 +85,7 @@ try:
     totScans = 0
     totSkip = 0 # Total skipped samples
 
-    output_names=['low_time']
+    output_names=['clock','low_time']
     cur_log="dyno"+"_"+str(start.month)+"_"+str(start.day)+"_"+str(start.year)+"_"+str(start.hour)+"_"+str(start.minute)+"_"+str(start.second)+".csv"
 
     with open("test_dyno.csv", "w") as f:
@@ -100,15 +103,24 @@ try:
         data = ret[0]
         data_intermediate=np.reshape(data, (scansPerRead,len(aScanListNames)))
 
-        low_time=data_intermediate[:,1]
+        a = data_intermediate[:, 0]
+        b = data_intermediate[:, 1]
+        c = data_intermediate[:, 2]
+        d = data_intermediate[:, 3]
+        e = data_intermediate[:, 4]
+        clock = (a + b * 65536) / (80000000 / 2)
+        low_time= (65536*data_intermediate[:,3] + data_intermediate[:,2])/80000000
 
 
-        output_data=np.array([low_time]).transpose()
+        output_data=np.array([clock, low_time]).transpose()
+
+        # print ("This is a: " + str(a))
+        # print ("This is b: " + str(b))
+        # print ("This is c: " + str(c))
+        # print ("This is d: " + str(d))
+        # print ("This is e: " + str(e))
 
         print (output_data)
-
-
-        
 
 
         f=open('test_dyno.csv','a')
