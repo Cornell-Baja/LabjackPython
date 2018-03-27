@@ -108,7 +108,7 @@ try:
         d = data_intermediate[:, 3]
         clock = (a + b * 65536) / (80000000 / 2)
         rpm_1 = c + d * 65536
-        if rpm_1 != 0:
+        if np.all(rpm_1 != 0):
             rpm_1 = (80000000 / clock_divisor) / rpm_1
 
 
