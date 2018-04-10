@@ -39,10 +39,9 @@ print("Opened a LabJack with Device type: %i, Connection type: %i,\n" \
 aScanListNames = ["CORE_TIMER","STREAM_DATA_CAPTURE_16", "DIO0_EF_READ_A_AND_RESET", "STREAM_DATA_CAPTURE_16", "DIO0_EF_READ_B", "STREAM_DATA_CAPTURE_16" ] #Scan list names to stream
 numAddresses = len(aScanListNames)
 aScanList = ljm.namesToAddresses(numAddresses, aScanListNames)[0]
-scanRate = 50
+scanRate = 100
 scansPerRead = int(scanRate/2)
 clock_divisor = 1
-
 
 try:
     # Configure the analog inputs' negative channel, range, settling time and
@@ -109,7 +108,7 @@ try:
         d = data_intermediate[:, 3]
         e = data_intermediate[:, 4]
         clock = (a + b * 65536) / (80000000 / 2)
-        low_time= (65536*data_intermediate[:,3] + data_intermediate[:,2])/80000000
+        low_time= (65536*data_intermediate[:,5] + data_intermediate[:,4])/80000000
 
 
         output_data=np.array([clock, low_time]).transpose()
