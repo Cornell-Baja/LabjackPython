@@ -76,7 +76,7 @@ try:
     totScans = 0
     totSkip = 0 # Total skipped samples
 
-    output_names=['weight', 'clock']
+    output_names=['clock', 'weight']
     cur_log="dyno"+"_"+str(start.month)+"_"+str(start.day)+"_"+str(start.year)+"_"+str(start.hour)+"_"+str(start.minute)+"_"+str(start.second)+".csv"
 
     with open("test_dyno.csv", "w") as f:
@@ -103,6 +103,7 @@ try:
 
 
         output_data = np.array([clock, weight]).transpose()
+        print(np.array([clock[len(clock)-1], weight[len(weight)-1]]))
 
         f = open('test_dyno.csv', 'a')
         np.savetxt(f, output_data, delimiter=',')
