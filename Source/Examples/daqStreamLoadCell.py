@@ -103,8 +103,12 @@ try:
 
 
         output_data = np.array([clock, weight]).transpose()
-        print(np.array([clock[len(clock)-1], weight[len(weight)-1]]))
-
+        print(clock.shape)
+        print(weight.shape)
+        print(clock[len(clock)-1], weight[len(weight)-1])
+        #print(np.array([clock[len(clock)-1], weight[len(weight)-1]]))
+        
+        print(output_data.shape)
         f = open('test_dyno.csv', 'a')
         np.savetxt(f, output_data, delimiter=',')
         f.close()
