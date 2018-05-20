@@ -50,8 +50,8 @@ try:
     # Note when streaming, negative channels and ranges can be configured for
     # individual analog inputs, but the stream has only one settling time and
     # resolution.
-    
-                                             
+
+
 
     aNames = [
                 "DIO_EF_CLOCK0_ENABLE",
@@ -96,11 +96,12 @@ try:
     with open(cur_log, "w") as f:
         writer = csv.writer(f)
         writer.writerow(output_names)
-    
+
+    first_time = 0;
     while True:
         print ("logging")
         ret = ljm.eStreamRead(handle)
-        
+
         data = ret[0]
         data_intermediate=np.reshape(data, (scansPerRead,len(aScanListNames)))
 
@@ -111,32 +112,22 @@ try:
         e = data_intermediate[:, 4]
         clock = (a + b * 65536) / (80000000 / 2)
         low_time= (65536*data_intermediate[:,5] + data_intermediate[:,4])/80000000
-
-
-
+        first_time = clock[0]
         output_data=np.array([clock, low_time]).transpose()
+        clock_output = []
         rpm = []
         for x in output_data:
-             if (x[1] >= .0000003):
+             if (x[1] > 0.000000099):
                  numZeroes = numZeroes + 1
-             rpm.append(numZeroes/x[0])
-        output_data2 = np.array([clock, rpm]).transpose()
+        if (numZeroes > 15):
+                numZeroes = 15
+        end_time = clock[-1];
+        rpm.append(numZeroes * 2 * 60 / (end_time - first_time))
+        clock_output.append(end_time)
+        output_data2 = np.array([clock_output, rpm]).transpose()
+        first_time = 0
+        numZeroes = 0
         print(output_data2)
-        # print ("This is a: " + str(a))
-        # print ("This is b: " + str(b))
-        # print ("This is c: " + str(c))
-        # print ("This is d: " + str(d))
-        # print ("This is e: " + str(e))
-        #print (np.array([rpm]))
-
-        #print (output_data)
-        # print (numZeroes)
-        #
-        # f=open('test_dyno.csv','a')
-        # np.savetxt(f,output_data,delimiter=',')
-        # f.close()
-        #
-        #
         f = open('test_dyno.csv', 'a')
         np.savetxt(f, output_data2, delimiter=',')
         f.close()

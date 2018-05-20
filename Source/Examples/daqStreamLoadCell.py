@@ -50,7 +50,6 @@ try:
     # individual analog inputs, but the stream has only one settling time and
     # resolution.
     
-                                             
 
     aNames = ["AIN0_NEGATIVE_CH",
                 "DIO_EF_CLOCK0_ENABLE",
@@ -106,7 +105,6 @@ try:
         print(clock.shape)
         print(weight.shape)
         print(clock[len(clock)-1], weight[len(weight)-1])
-        #print(np.array([clock[len(clock)-1], weight[len(weight)-1]]))
         
         print(output_data.shape)
         f = open('test_dyno.csv', 'a')
