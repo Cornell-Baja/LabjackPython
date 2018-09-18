@@ -41,7 +41,7 @@ print("Opened a LabJack with Device type: %i, Connection type: %i,\n" \
 # read_a_and_reset reads from register a of the dio pin (https://labjack.com/support/datasheets/t-series/digital-io/extended-features/interrupt-frequency)
 #     and then resets inbetween measurement criteria. this way if the gear stops, the hall effect sensor returns 0 instead of increasing the period forever
 # stream_data_caputre allows for full float32 data types to be sent over streaming. it holds the Most Significant 16bits associated with the proceeding scan name
-aScanListNames = ["AIN0", "AIN1", "AIN2","AIN3", "AIN4", "AIN5", "AIN6","AIN7",
+aScanListNames = ["CORE_TIMER","STREAM_DATA_CAPTURE_16","AIN0", "AIN1", "AIN2","AIN3", "AIN4", "AIN5", "AIN6","AIN7",
                     "DIO0_EF_READ_A_AND_RESET", "STREAM_DATA_CAPTURE_16", "DIO1_EF_READ_A_AND_RESET", "STREAM_DATA_CAPTURE_16", 
                     "DIO2_EF_READ_A_AND_RESET", "STREAM_DATA_CAPTURE_16", "DIO3_EF_READ_A_AND_RESET", "STREAM_DATA_CAPTURE_16"] #Scan list names to stream
 numAddresses = len(aScanListNames)
@@ -60,7 +60,11 @@ try:
     
                                              
 
-    aNames = ["AIN_ALL_NEGATIVE_CHANNEL",  # setting all analog in terminals to single eneded, see https://labjack.com/support/datasheets/t-series/ain for details
+    aNames = ["DIO_EF_CLOCK0_ENABLE",
+              "DIO_EF_CLOCK0_DIVISOR",
+              "DIO_EF_CLOCK0_ROLL_VALUE",
+              "DIO_EF_CLOCK0_ENABLE",
+              "AIN_ALL_NEGATIVE_CH",       # setting all analog in terminals to single eneded, see https://labjack.com/support/datasheets/t-series/ain for details
               "AIN0_RANGE",                # register reference for AIN0 range
               "AIN1_RANGE",                # register reference for AIN1 range
               "AIN2_RANGE",                # register reference for AIN2 range
@@ -83,7 +87,11 @@ try:
               "DIO3_EF_ENABLE"]
 
 
-    aValues = [199,                        # write value 199 to set all channels to single ended measurement
+    aValues = [0,
+               1,
+               0,
+               1,
+               199,                        # write value 199 to set all channels to single ended measurement
                10,                         # set analog input range to +/-10 V, adjust if different range is needed (1, .1, .01)
                10,
                10,
@@ -117,12 +125,13 @@ try:
     totScans = 0
     totSkip = 0 # Total skipped samples
 
-    output_names = ['AIN0', 'AIN1','AIN2', 'AIN3', 'AIN4', 'AIN5', 'AIN6', 'AIN7', 'DIO0', 'DIO1', 'DIO2', 'DIO3']
-
-    with open("stream_test.csv", "w") as f:
-        write = csv.write(f)
-        write.writerow(output_names)
-
+    output_names = ['TIME','AIN0', 'AIN1','AIN2', 'AIN3', 'AIN4', 'AIN5', 'AIN6', 'AIN7', 'DIO0', 'DIO1', 'DIO2', 'DIO3']
+    cur_log = "camber"+"_"+str(start.month)+"_"+str(start.day)+"_"+str(start.year)+"_"+str(start.hour)+"_"+str(start.minute)+"_"+str(start.second)+".csv"
+    
+    with open(cur_log, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(output_names)
+    
     while True:
         print ("logging")
         streamRead = ljm.eStreamRead(handle)
@@ -130,27 +139,33 @@ try:
         data = streamRead[0]
         data = np.reshape(data, (scansPerRead, len(aScanListNames)))
 
-        ain0 = data[:, 0]
-        ain1 = data[:, 1]
-        ain2 = data[:, 2]
-        ain3 = data[:, 3]
-        ain4 = data[:, 4]
-        ain5 = data[:, 5]
-        ain6 = data[:, 6]
-        ain7 = data[:, 7]
+        a = data[:, 0]
+        b = data[:, 1]
+        ain0 = data[:, 2]
+        ain1 = data[:, 3]
+        ain2 = data[:, 4]
+        ain3 = data[:, 5]
+        ain4 = data[:, 6]
+        ain5 = data[:, 7]
+        ain6 = data[:, 8]
+        ain7 = data[:, 9]
 
-        dio0 = data[:, 8] + 65536*data[:, 9]
-        dio1 = data[:, 10] + 65536*data[:, 11]
-        dio2 = data[:, 12] + 65536*data[:, 13]
-        dio3 = data[:, 14] + 65536*data[:, 15]
+        dio0 = data[:, 10] + 65536*data[:, 11]
+        dio1 = data[:, 12] + 65536*data[:, 13]
+        dio2 = data[:, 14] + 65536*data[:, 15]
+        dio3 = data[:, 16] + 65536*data[:, 17]
+        
+        clock = (a + b * 65536) / (80000000 / 2)
 
-        output_data = np.array([ain0, ain1, ain2, ain3, ain4, ain5, ain6, ain7, dio1, dio2, dio3, dio4]).transpose()
+        output_data = np.array([clock, ain0, ain1, ain2, ain3, ain4, ain5, ain6, ain7, dio0, dio1, dio2, dio3]).transpose()
 
         print (output_data)
-
-        f = open('stream_test.csv', 'a')
-        np.savetxt(f, output_data, delimiter=',')
+        
+        f = open(cur_log, 'a')
+        np.savetxt(f, output_data, delimiter = ',')
         f.close()
+    
+    end = datetime.now()
 
 except ljm.LJMError:
 	  ljme = sys.exc_info()[1]
